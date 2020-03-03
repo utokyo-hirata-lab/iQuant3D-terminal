@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='iQuant3D-terminal',
-    version='1.0.0',
+    version='1.0.1',
     author='Wataru Takahagi',
     author_email='watarut@eqchem.s.u-tokyo.ac.jp',
     url='https://github.com/utokyo-hirata-lab/iquant3D_terminal',

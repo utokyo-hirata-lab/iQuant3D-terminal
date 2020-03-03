@@ -1,4 +1,4 @@
-#iQuant3D-termial (ZEBRA) Feb 28, 2020
+#iQuant3D-termial (ZEBRA) March 2, 2020
 import re
 import os
 import os.path
@@ -182,7 +182,7 @@ class iq3t():
         print('[ '+pycolor.GREEN+'Generate'+pycolor.END+'    ] '+outname)
         merged_line.T.to_excel(outname, sheet_name=imaging_element)
         print('[ '+pycolor.BLUE+'Success'+pycolor.END+'     ] '+outname)
-        backsignal = 1E-4
+        backsignal = 1E4
         merged_line = merged_line + backsignal
 
         #plt.figure()
@@ -197,7 +197,8 @@ class iq3t():
         #img = cv2.cvtColor(img_raw, cv2.COLOR_BGR2GRAY)
 
         #sns.heatmap(merged_line.T,cmap='gnuplot2',xticklabels=False,yticklabels=False,norm=LogNorm(vmin=merged_line.values.min(), vmax=merged_line.values.max()),ax=ax,cbar_ax=cbar_ax,cbar_kws={"orientation": "horizontal"})
-        sns.heatmap(merged_line.T,cmap='jet',xticklabels=False,yticklabels=False,norm=LogNorm(vmin=merged_line.values.min(), vmax=merged_line.values.max()),ax=ax,cbar=False)
+        #sns.heatmap(merged_line.T,cmap='jet',xticklabels=False,yticklabels=False,norm=LogNorm(vmin=merged_line.values.min(), vmax=merged_line.values.max()),ax=ax,cbar=False)
+        sns.heatmap(merged_line.T,cmap='jet',xticklabels=False,yticklabels=False,norm=LogNorm(),ax=ax,cbar=False,robust=True)
         #ax.set_title(imaging_element,color='white',fontsize=18, fontweight="bold")
         #outname = filepath.split('.')[0]+'_'+imaging_element+'_mapping.pdf'
         #print('[ '+pycolor.GREEN+'Generate'+pycolor.END+' ] '+outname)
@@ -295,12 +296,13 @@ class iq3t():
                 input_book = pd.read_excel(datalist[i], index_col=0)
                 sns.set()
                 plt.style.use('dark_background')
-                input_book = input_book + 1E4
+                input_book = input_book + 5E3
                 if self.frag == 0:
                     self.vmin = vmax
                     self.vmax = vmax
                     self.frag = 1
-                sns.heatmap(input_book,cmap='jet',xticklabels=False,yticklabels=False,norm=LogNorm(vmin=self.vmin, vmax=self.vmax),cbar=False)
+                #sns.heatmap(input_book,cmap='jet',xticklabels=False,yticklabels=False,norm=LogNorm(vmin=self.vmin, vmax=self.vmax),cbar=False)
+                sns.heatmap(input_book,cmap='jet',xticklabels=False,yticklabels=False,norm=LogNorm(),cbar=False,robust=True)
                 print('[ '+pycolor.GREEN+'Sectioning'+pycolor.END+'  ] '+datalist[i])
                 plt.title(element+' (Layer='+datalist[i].split('/')[-1].split('_')[0]+')',color='white',fontsize=18, fontweight="bold")
             plt.tight_layout()
@@ -314,24 +316,26 @@ class iq3t():
 
     def normalize(self,element):
         datalist = glob.glob(self.folder+'/*.csv')
-        [self.get_element_list(filepath) for filepath in datalist]
+        #[self.get_element_list(filepath) for filepath in datalist]
         for target in self.elements:
-            outname = self.folder+'/mapping/'+target+'_per13C.png'
+            #outname = self.folder+'/mapping/'+target+'_per'+element+'.png'
+            #print(outname)
             #print('[ '+pycolor.GREEN+'Generate'+pycolor.END+'   ] '+outname)
             print('[ '+pycolor.GREEN+'Normalizing'+pycolor.END+' ] '+self.folder+'/mapping/*'+target+'_mapping.png')
             datalist_c = sorted(glob.glob(self.folder+'/result/*'+element+'.xlsx'))
             datalist_e = sorted(glob.glob(self.folder+'/result/*'+target+'.xlsx'))
-            input_book_c = pd.read_excel(datalist_c[0], index_col=0)
-            input_book_e = pd.read_excel(datalist_e[0], index_col=0)
-            nimage = input_book_e/input_book_c
-            vmin = nimage.values.min()
-            vmax = nimage.values.max()
-            #print(nimage)
-            sns.heatmap(nimage,cmap='jet',xticklabels=False,yticklabels=False,cbar=True)
-            plt.tight_layout()
-            plt.savefig(outname)
-            plt.close()
-            print('[ '+pycolor.BLUE+'Success'+pycolor.END+'     ] '+outname)
+            for i in range(len(datalist_c)):
+                input_book_c = pd.read_excel(datalist_c[i], index_col=0)
+                input_book_e = pd.read_excel(datalist_e[i], index_col=0)
+                nimage = input_book_e/input_book_c
+                outname = self.folder+'/mapping/'+datalist_c[i].split('/')[-1].split('_')[0]+'_'+target+'_per'+element+'.png'
+                #outname = datalist_c[i].split('/')[-1].split('_')[0] + '_' + outname
+                #print(outname)
+                sns.heatmap(nimage,cmap='jet',xticklabels=False,yticklabels=False,cbar=True,robust=True)
+                plt.tight_layout()
+                plt.savefig(outname)
+                plt.close('all')
+                print('[ '+pycolor.BLUE+'Success'+pycolor.END+'     ] '+outname)
             #plt.show()
 
     def finish_code(self):
