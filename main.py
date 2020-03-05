@@ -3,7 +3,6 @@ iq3t = iq3t('data','53Cr',washout=30,threshold=1E4,split=4) #data_folder, time_s
 #iq3t.run_test()
 #iq3t.run_rapid()
 iq3t.run(norm='23Na')
-
 iq3t.multi_layer('13C')
 iq3t.multi_layer('23Na')
 iq3t.multi_layer('25Mg')
