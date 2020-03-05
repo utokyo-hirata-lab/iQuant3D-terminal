@@ -20,6 +20,12 @@ from sklearn.cluster import KMeans
 from scipy.signal import argrelmax
 from scipy import fftpack
 
+#ppt
+import pptx
+from pptx.util import Inches
+from pptx import Presentation
+
+
 class pycolor:
     BLACK = '\033[30m'
     RED = '\033[31m'
@@ -258,6 +264,45 @@ class iq3t():
         if os.path.isdir(dirname) == False:os.mkdir(dirname)
         os.system('mv '+self.folder+'/*mapping.png '+self.folder+'/mapping')
 
+    def mkppt(self):
+        #reference url: https://qiita.com/aykbzl/items/09b52fabb3af6b925fb9
+        ppt = Presentation()
+        width = ppt.slide_width
+        height = ppt.slide_height
+        title_slide_layout = ppt.slide_layouts[0] #Title Slideの作成
+        bullet_slide_layout = ppt.slide_layouts[1] #Title and Contentの作成
+        blank_slide_layout = ppt.slide_layouts[6] #Blankの作成
+        #Title Slide
+        slide = ppt.slides.add_slide(title_slide_layout)
+        title = slide.shapes.title
+        subtitle = slide.placeholders[1]
+        title_text = ""
+        subtitle_text = ""
+        title.text = title_text
+        subtitle.text = subtitle_text
+        #get images
+        fnms = glob.glob(self.folder + '/mapping/*.png')
+#        print(self.folder + '/mapping/*.png')
+#        print(fnms)
+        tx_left = tx_top = tx_width = tx_height = Inches(1)
+        i = 1
+        for fnm in fnms:
+            #insert images
+            slide_picture = ppt.slides.add_slide(blank_slide_layout)
+            pic = slide_picture.shapes.add_picture(fnm, width, height, width, height)
+            pic.left = int((width -pic.width)/2)
+            pic.top = int((width -pic.height)/2)
+            #insert a textbox
+            path_split = fnm.split("/")
+            filename = path_split[-1]
+            sample_number = filename.split("_")
+            txBox = slide_picture.shapes.add_textbox(tx_left, tx_top/2, tx_width, tx_height)
+            tB = txBox.text_frame
+            tB.text = filename
+            i += 1
+        ppt.save('data/brain_imaging_' + sample_number[0] + '.pptx')
+
+
     def clustering(self,cnumber):
         if os.path.isdir(self.folder+'/mapping_group') == True:
             os.system('rm -rf '+self.folder+'/mapping_group')
@@ -349,6 +394,7 @@ class iq3t():
             [[self.iq3_imaging(filepath,self.standard_element, ie, ts) for ie in self.get_element_list(filepath)] for filepath in datalist]
             self.finishing()
             self.normalize(norm)
+            self.mkppt()
 
     def run_rapid(self):
         datalist = glob.glob(self.folder+'/*.csv')
